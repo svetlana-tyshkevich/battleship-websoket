@@ -17,7 +17,7 @@ wss.on('connection', function connection(ws) {
 
         const answer = handleMessage(data);
 
-        if (answer) ws.send(answer)
+        if (answer) ws.send(answer);
     });
 
 });
