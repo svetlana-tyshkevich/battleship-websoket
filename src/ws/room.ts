@@ -1,21 +1,31 @@
 import { rooms, setRooms } from './db.js';
 import { IRoom, IUser } from '../types/interface-types.js';
 
-export const createRoomAction = (currentUser: IUser | undefined) => {
-    if (currentUser) {
-        const roomWithCurrentUser = rooms.find((room: IRoom) => room.roomUsers.includes(currentUser));
-        if (!roomWithCurrentUser) {
-            const id = new Date().getTime();
-            const newRoom: IRoom = {
-                roomId: id,
-                roomUsers: currentUser ? [currentUser] : []
+export const createRoomAction = (currentUser: IUser) => {
+    const roomWithCurrentUser = rooms.find((room: IRoom) => room.roomUsers.includes(currentUser));
+    if (!roomWithCurrentUser) {
+        const id = new Date().getTime();
+        const newRoom: IRoom = {
+            roomId: id,
+            roomUsers: currentUser ? [currentUser] : []
 
-            };
-            rooms.push(newRoom);
-        }
+        };
+        rooms.push(newRoom);
     }
 
+    return rooms;
+};
 
+export const addUserToRoomAction = (data: { indexRoom: number; }, currentUser: IUser) => {
+    const { indexRoom } = data;
+    const room = rooms.find((room: IRoom) => room.roomId === indexRoom);
+    if (room) {
+        const roomIncludesCurrentUser = room.roomUsers.includes(currentUser);
+        if (!roomIncludesCurrentUser) {
+            room.roomUsers.push(currentUser);
+            updateRoomStateAction();
+        }
+    }
     return rooms;
 };
 

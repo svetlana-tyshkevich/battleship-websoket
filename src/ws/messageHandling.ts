@@ -1,6 +1,6 @@
 import { RawData } from 'ws';
 import { logInAction } from './logIn.js';
-import { createRoomAction, updateRoomStateAction } from './room.js';
+import { addUserToRoomAction, createRoomAction, updateRoomStateAction } from './room.js';
 import { updateWinnersAction } from './winners.js';
 import { IUser } from '../types/interface-types.js';
 
@@ -21,8 +21,19 @@ export const handleMessage = (message: RawData, currentUser: IUser | undefined) 
             break;
         }
         case 'create_room': {
-            const updatedRoomsData = createRoomAction(currentUser);
-            responses.push({ type: 'update_room', data: updatedRoomsData });
+            if (currentUser) {
+                const updatedRoomsData = createRoomAction(currentUser);
+                responses.push({ type: 'update_room', data: updatedRoomsData });
+            }
+            break;
+        }
+        case 'add_user_to_room': {
+            if (currentUser) {
+                const updatedRoomsData = addUserToRoomAction(data, currentUser);
+                responses.push({ type: 'update_room', data: updatedRoomsData });
+            }
+
+
             break;
         }
 

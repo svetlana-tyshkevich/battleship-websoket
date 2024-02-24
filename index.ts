@@ -20,14 +20,15 @@ wss.on('connection', function connection(ws) {
         const responses = handleMessage(data, currentUser);
         const stringifiedResponces = responses.map(res => ({ type: res.type, id: 0, data: JSON.stringify(res.data) }));
         stringifiedResponces.forEach(res => {
-            if (res.type === 'update_winners') {
+            if (['update_room', 'update_winners'].includes(res.type)) {
                 wss.clients.forEach(client => {
                     if (client.readyState === 1) {
                         client.send(JSON.stringify(res))
                     }
                 })
             } else if (res.type === 'reg') {
-                currentUser = JSON.parse(res.data);
+                const currentUserObject = JSON.parse(res.data);
+                currentUser = {name: currentUserObject.name, index: currentUserObject.index}
                 ws.send(JSON.stringify(res))
             } else
             ws.send(JSON.stringify(res))
