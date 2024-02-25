@@ -1,13 +1,17 @@
 import { users } from './db.js';
-import { IUser } from '../types/interface-types.js';
+import { IShip, IUser } from '../types/interface-types.js';
+import { WebSocket } from 'ws';
 
-export const logInAction = (data: IUser) => {
+export const logInAction = (data: IUser, ws: WebSocket) => {
     let answerData;
+    let newUser;
     const { name, password } = data;
     const foundUser = users.find(item => item.name === name);
     if (!foundUser) {
         const index = new Date().getTime();
-        users.push({ name, password, index });
+        const ships: IShip[] = []
+        newUser = { name, password, index, ws, ships }
+        users.push(newUser);
         answerData = {
             name,
             index,
@@ -29,5 +33,7 @@ export const logInAction = (data: IUser) => {
             errorText: 'Password is incorrect!'
         };
     }
-    return answerData
-}
+    const response = { type: 'reg', id: 0, data: JSON.stringify(answerData) };
+    ws.send(JSON.stringify(response));
+    return newUser;
+};

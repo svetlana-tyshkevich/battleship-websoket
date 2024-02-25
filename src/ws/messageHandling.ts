@@ -1,47 +1,47 @@
-import { RawData } from 'ws';
+import { RawData, WebSocket, WebSocketServer } from 'ws';
 import { logInAction } from './logIn.js';
-import { addUserToRoomAction, createRoomAction, updateRoomStateAction } from './room.js';
+import { addUserToRoomAction, createRoomAction, getOpenRooms } from './room.js';
 import { updateWinnersAction } from './winners.js';
 import { IUser } from '../types/interface-types.js';
-import { createGameAction } from './game.js';
+import { addShipsAction, createGameAction } from './game.js';
+import { rooms } from './db.js';
 
-export const handleMessage = (message: RawData, currentUser: IUser | undefined) => {
+export const handleMessage = (message: RawData, currentUser: IUser | undefined, ws: WebSocket, wss: WebSocketServer) => {
     const requestData = JSON.parse(message.toString());
     const type = requestData.type;
     const data = requestData.data ? JSON.parse(requestData.data) : '';
-    const responses = [];
 
     switch (type) {
         case 'reg': {
-            const loginResponseData = logInAction(data);
-            const updatedRoomsData = updateRoomStateAction();
-            const updatedWinnersData = updateWinnersAction();
-            responses.push({ type: 'reg', data: loginResponseData });
-            responses.push({ type: 'update_room', data: updatedRoomsData });
-            responses.push({ type: 'update_winners', data: updatedWinnersData });
-            break;
+            const loginResponseData = logInAction(data, ws);
+            getOpenRooms(wss);
+            updateWinnersAction(wss);
+            return loginResponseData;
         }
         case 'create_room': {
             if (currentUser) {
-                const updatedRoomsData = createRoomAction(currentUser);
-                responses.push({ type: 'update_room', data: updatedRoomsData });
+                createRoomAction(currentUser, wss);
             }
             break;
         }
         case 'add_user_to_room': {
             if (currentUser) {
-                const updatedRoomsData = addUserToRoomAction(data, currentUser);
-                responses.push({ type: 'update_room', data: updatedRoomsData });
-                if (!updatedRoomsData.find(room => room.roomId === data.indexRoom)) {
-                    const gameData = createGameAction(currentUser);
-                    responses.push({ type: 'create_game', data: gameData });
+                const { indexRoom } = data;
+                addUserToRoomAction(indexRoom, currentUser);
+                getOpenRooms(wss);
+                const currentRoom = rooms.find(room => room.roomId === indexRoom);
+                if (currentRoom && currentRoom.roomUsers.length === 2) {
+                    createGameAction(currentRoom);
                 }
-
             }
+            break;
+        }
+        case 'add_ships': {
+            const { gameId, indexPlayer, ships } = data;
+            addShipsAction(gameId, indexPlayer, ships);
             break;
         }
 
     }
-
-    return responses;
+    return null;
 };

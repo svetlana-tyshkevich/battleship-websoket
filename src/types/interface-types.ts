@@ -1,7 +1,11 @@
+import { WebSocket } from 'ws';
+
 export interface IUser {
     index?: number;
     name: string;
     password?: string;
+    ws?: WebSocket;
+    ships: IShip[];
 }
 
 export interface IWinner {
@@ -12,6 +16,7 @@ export interface IWinner {
 export interface IRoom {
     roomId: number;
     roomUsers: IUser[];
+    gameId?: number;
 }
 
 export interface IGame {
