@@ -3,6 +3,7 @@ import { logInAction } from './logIn.js';
 import { addUserToRoomAction, createRoomAction, updateRoomStateAction } from './room.js';
 import { updateWinnersAction } from './winners.js';
 import { IUser } from '../types/interface-types.js';
+import { createGameAction } from './game.js';
 
 export const handleMessage = (message: RawData, currentUser: IUser | undefined) => {
     const requestData = JSON.parse(message.toString());
@@ -31,9 +32,12 @@ export const handleMessage = (message: RawData, currentUser: IUser | undefined) 
             if (currentUser) {
                 const updatedRoomsData = addUserToRoomAction(data, currentUser);
                 responses.push({ type: 'update_room', data: updatedRoomsData });
+                if (!updatedRoomsData.find(room => room.roomId === data.indexRoom)) {
+                    const gameData = createGameAction(currentUser);
+                    responses.push({ type: 'create_game', data: gameData });
+                }
+
             }
-
-
             break;
         }
 

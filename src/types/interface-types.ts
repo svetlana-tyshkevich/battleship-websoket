@@ -14,6 +14,11 @@ export interface IRoom {
     roomUsers: IUser[];
 }
 
+export interface IGame {
+    idGame: number;
+    idPlayer: number;
+}
+
 export interface IShip {
     position: {
         x: number,
