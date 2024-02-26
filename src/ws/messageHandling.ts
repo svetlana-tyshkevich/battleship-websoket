@@ -15,7 +15,7 @@ export const handleMessage = (message: RawData, currentUser: IUser | undefined, 
         case 'reg': {
             const loginResponseData = logInAction(data, ws);
             getOpenRooms(wss);
-            updateWinnersAction(wss);
+            updateWinnersAction();
             return loginResponseData;
         }
         case 'create_room': {

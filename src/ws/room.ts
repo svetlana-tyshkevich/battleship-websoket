@@ -8,8 +8,8 @@ export const createRoomAction = (currentUser: IUser, wss: WebSocketServer) => {
         const id = new Date().getTime();
         const newRoom: IRoom = {
             roomId: id,
-            roomUsers: currentUser ? [currentUser] : []
-
+            roomUsers: currentUser ? [currentUser] : [],
+            currentUserId: undefined
         };
         rooms.push(newRoom);
     }

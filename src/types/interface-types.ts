@@ -7,10 +7,6 @@ export interface IUser {
     ws?: WebSocket;
     ships: IShip[];
     parsedShips?: IParsedShip[];
-}
-
-export interface IWinner {
-    name: string;
     wins: number;
 }
 
@@ -18,6 +14,7 @@ export interface IRoom {
     roomId: number;
     roomUsers: IUser[];
     gameId?: number;
+    currentUserId: number | undefined;
 }
 
 export interface IGame {

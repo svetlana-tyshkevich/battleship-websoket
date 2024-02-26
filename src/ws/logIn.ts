@@ -10,7 +10,7 @@ export const logInAction = (data: IUser, ws: WebSocket) => {
     if (!foundUser) {
         const index = new Date().getTime();
         const ships: IShip[] = []
-        newUser = { name, password, index, ws, ships }
+        newUser = { name, password, index, ws, ships, wins: 0 }
         users.push(newUser);
         answerData = {
             name,

@@ -1,5 +1,7 @@
 import { ICell, IRoom, IShip } from '../types/interface-types.js';
 import { rooms } from './db.js';
+import { updateWinnersAction } from './winners.js';
+import { deleteRoomAction } from './room.js';
 
 export const createGameAction = (currentRoom: IRoom) => {
     const gameId = new Date().getTime();
@@ -30,6 +32,7 @@ const parseShips = (ships: IShip[]) => {
 export const addShipsAction = (gameId: number, indexPlayer: number, ships: IShip[]) => {
     const currentRoom = rooms.find(room => room.gameId === gameId);
     if (currentRoom) {
+        currentRoom.currentUserId = indexPlayer;
         const roomUsers = currentRoom.roomUsers;
         roomUsers.forEach(user => {
             if (user.index === indexPlayer) {
@@ -58,6 +61,7 @@ export const addShipsAction = (gameId: number, indexPlayer: number, ships: IShip
 
 export const attackAction = (gameId: number, indexPlayer: number, x: number, y: number) => {
     const currentRoom = rooms.find(room => room.gameId === gameId);
+    if (currentRoom?.currentUserId !== indexPlayer) return;
     if (currentRoom) {
         const roomUsers = currentRoom.roomUsers;
         const player = roomUsers.find(user => user.index === indexPlayer);
@@ -125,6 +129,7 @@ export const attackAction = (gameId: number, indexPlayer: number, x: number, y: 
                 result = 'miss';
                 nextPlayerId = enemy?.index;
             }
+            currentRoom.currentUserId = nextPlayerId
         }
 
         roomUsers.forEach(user => {
@@ -151,6 +156,8 @@ export const attackAction = (gameId: number, indexPlayer: number, x: number, y: 
             });
         });
         if (enemy?.parsedShips?.length === 0) {
+            const currentPlayer = roomUsers.find(user => user.index === indexPlayer);
+            if (currentPlayer) currentPlayer.wins += 1;
             roomUsers.forEach(user => {
                 const resData = { winPlayer: player?.index };
                 const response = { type: 'finish', id: 0, data: JSON.stringify(resData) };
@@ -158,6 +165,8 @@ export const attackAction = (gameId: number, indexPlayer: number, x: number, y: 
                     user.ws.send(JSON.stringify(response));
                 }
             });
+            updateWinnersAction();
+            deleteRoomAction(currentRoom.roomId)
         }
 
 
