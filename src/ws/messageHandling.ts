@@ -46,6 +46,17 @@ export const handleMessage = (message: RawData, currentUser: IUser | undefined, 
             attackAction(gameId, indexPlayer, x, y);
             break;
         }
+        case 'randomAttack': {
+            const { gameId, indexPlayer } = data;
+            const currentRoom = rooms.find(room => room.gameId === gameId);
+            const enemy = currentRoom?.roomUsers.find(user => user.index !== indexPlayer);
+            if (enemy) {
+                const randomNumber = Math.floor(Math.random() * (enemy.freeCells.length + 1));
+                const randomFreeCell = enemy.freeCells[randomNumber]
+                if (randomFreeCell) attackAction(gameId, indexPlayer, randomFreeCell.x, randomFreeCell.y);
+            }
+            break;
+        }
 
     }
     return null;

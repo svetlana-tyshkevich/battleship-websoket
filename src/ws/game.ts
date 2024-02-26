@@ -7,6 +7,15 @@ export const createGameAction = (currentRoom: IRoom) => {
     const gameId = new Date().getTime();
     currentRoom.gameId = gameId;
     currentRoom.roomUsers.forEach(user => {
+        const freeCells = [];
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                freeCells.push({ x: i, y: j });
+            }
+        }
+        user.freeCells = freeCells;
+    });
+    currentRoom.roomUsers.forEach(user => {
         const resData = { idGame: gameId, idPlayer: user.index };
         const response = { type: 'create_game', id: 0, data: JSON.stringify(resData) };
         if (user.ws) user.ws.send(JSON.stringify(response));
@@ -66,6 +75,21 @@ export const attackAction = (gameId: number, indexPlayer: number, x: number, y: 
         const roomUsers = currentRoom.roomUsers;
         const player = roomUsers.find(user => user.index === indexPlayer);
         const enemy = roomUsers.find(user => user.index !== indexPlayer);
+        const isCellFree = enemy?.freeCells.find(cell => cell.x === x && cell.y === y);
+        console.log(isCellFree);
+        console.log(x, y);
+        console.log(enemy?.freeCells);
+        if (!isCellFree) {
+            roomUsers.forEach(user => {
+                const resData = { currentPlayer: enemy?.index };
+                const response = { type: 'turn', id: 0, data: JSON.stringify(resData) };
+                if (user.ws) {
+                    user.ws.send(JSON.stringify(response));
+                }
+            });
+            currentRoom.currentUserId = enemy?.index;
+            return
+        }
         let nextPlayerId: number | undefined;
         let result = '';
         let wreckedShip;
@@ -129,8 +153,21 @@ export const attackAction = (gameId: number, indexPlayer: number, x: number, y: 
                 result = 'miss';
                 nextPlayerId = enemy?.index;
             }
-            currentRoom.currentUserId = nextPlayerId
+            currentRoom.currentUserId = nextPlayerId;
         }
+
+        if(enemy && enemy.freeCells) {
+            const usedCellIndex = enemy.freeCells.findIndex(cell => cell.x === x && cell.y === y);
+            enemy.freeCells.splice(usedCellIndex, 1)
+        }
+
+        missedAroundCells.forEach(cell => {
+            if (enemy) {
+                const usedCellIndex = enemy.freeCells.findIndex(c => c.x === cell.x && c.y === cell.y);
+                if (usedCellIndex >= 0) enemy.freeCells.splice(usedCellIndex, 1)
+            }
+        })
+
 
         roomUsers.forEach(user => {
             const resData = { position: { x, y }, currentPlayer: player?.index, status: result };
@@ -166,7 +203,7 @@ export const attackAction = (gameId: number, indexPlayer: number, x: number, y: 
                 }
             });
             updateWinnersAction();
-            deleteRoomAction(currentRoom.roomId)
+            deleteRoomAction(currentRoom.roomId);
         }
 
 

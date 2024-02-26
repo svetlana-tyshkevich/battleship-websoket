@@ -7,6 +7,7 @@ export interface IUser {
     ws?: WebSocket;
     ships: IShip[];
     parsedShips?: IParsedShip[];
+    freeCells: ICell[];
     wins: number;
 }
 
