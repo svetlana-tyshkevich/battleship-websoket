@@ -3,7 +3,7 @@ import { logInAction } from './logIn.js';
 import { addUserToRoomAction, createRoomAction, getOpenRooms } from './room.js';
 import { updateWinnersAction } from './winners.js';
 import { IUser } from '../types/interface-types.js';
-import { addShipsAction, createGameAction } from './game.js';
+import { addShipsAction, attackAction, createGameAction } from './game.js';
 import { rooms } from './db.js';
 
 export const handleMessage = (message: RawData, currentUser: IUser | undefined, ws: WebSocket, wss: WebSocketServer) => {
@@ -39,6 +39,11 @@ export const handleMessage = (message: RawData, currentUser: IUser | undefined, 
         case 'add_ships': {
             const { gameId, indexPlayer, ships } = data;
             addShipsAction(gameId, indexPlayer, ships);
+            break;
+        }
+        case 'attack': {
+            const { gameId, indexPlayer, x, y } = data;
+            attackAction(gameId, indexPlayer, x, y);
             break;
         }
 

@@ -6,6 +6,7 @@ export interface IUser {
     password?: string;
     ws?: WebSocket;
     ships: IShip[];
+    parsedShips?: IParsedShip[];
 }
 
 export interface IWinner {
@@ -32,4 +33,14 @@ export interface IShip {
     direction: boolean,
     length: number,
     type: "small"|"medium"|"large"|"huge",
+}
+export interface IParsedShip {
+    cells: ICell[],
+    shipStart: ICell,
+    direction: boolean,
+    length: number,
+}
+export interface  ICell {
+    x: number,
+    y: number,
 }
